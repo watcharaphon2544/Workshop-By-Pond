@@ -49,7 +49,7 @@ router.post("/", async function (req, res, next) {
   } catch (error) {
     res
       .status(500)
-      .json({ status: 500, message: "ระบบเกิดข้อผิดพลาด", data: [] });
+      .json({ status: 500, message: "ระบบเกิดข้อผิดพลาด" });
   }
   
 });

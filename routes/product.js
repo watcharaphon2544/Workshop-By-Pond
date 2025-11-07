@@ -42,13 +42,13 @@ router.get("/:id", verifyToken, async function (req, res, next) {
     } else {
       res
         .status(400)
-        .json({ status: 400, message: "ไม่พบข้อมูลรายการสินค้า", data: [] });
+        .json({ status: 400, message: "ไม่พบข้อมูลรายการสินค้า", data: {} });
     }
   } catch (error) {
     console.log(error);
     res
       .status(500)
-      .json({ status: 500, message: "ระบบเกิดข้อผิดพลาด", data: [] });
+      .json({ status: 500, message: "ระบบเกิดข้อผิดพลาด", data: {} });
   }
 });
 
@@ -67,13 +67,25 @@ router.post(
       }
 
       const product = new productSchema(playload);
-      await product.save();
-      res.status(201).json({ status: 201, message: "เพิ่มข้อมูลสินค้าสำเร็จ" });
+      if (product) {
+        await product.save();
+        res.status(201).json({
+          status: 201,
+          message: "เพิ่มข้อมูลสินค้าสำเร็จ",
+          data: product,
+        });
+      } else {
+        res.status(201).json({
+          status: 201,
+          message: "ไม่พบข้อมูลสินค้า",
+          data: {},
+        });
+      }
     } catch (error) {
       console.log(error);
       res
         .status(500)
-        .json({ status: 500, message: "เกิดข้อผิดพลาด", data: [] });
+        .json({ status: 500, message: "เกิดข้อผิดพลาด", data: {} });
     }
   }
 );
@@ -100,21 +112,23 @@ router.put(
       const products = await productSchema.findById(id);
       if (products) {
         await productSchema.findByIdAndUpdate(id, playload);
-        res
-          .status(200)
-          .json({ status: 200, message: "แก้ไขข้อมูลสินค้าสำเร็จ" });
+        res.status(200).json({
+          status: 200,
+          message: "แก้ไขข้อมูลสินค้าสำเร็จ",
+          data: products,
+        });
       } else {
         res.status(400).json({
           status: 400,
           message: "ไม่พบข้อมูลรายการสินค้าที่จะแก้ไข",
-          data: [],
+          data: {},
         });
       }
     } catch (error) {
       console.log(error);
       res
         .status(500)
-        .json({ status: 500, message: "เกิดข้อผิดพลาด", data: [] });
+        .json({ status: 500, message: "เกิดข้อผิดพลาด", data: {} });
     }
   }
 );
@@ -132,12 +146,12 @@ router.delete("/:id", verifyToken, async function (req, res, next) {
       res.status(404).json({
         status: 404,
         message: "ไม่พบข้อมูลรายการสินค้าที่จะลบ",
-        data: [],
+        data: {},
       });
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: 500, message: "เกิดข้อผิดพลาด", data: [] });
+    res.status(500).json({ status: 500, message: "เกิดข้อผิดพลาด", data: {} });
   }
 });
 
@@ -151,6 +165,7 @@ router.get("/:id/order", verifyToken, async function (req, res, next) {
       let data = {
         order_id: order.id,
         user_id: order.user_id,
+        product_id: order.product_id,
         name: products.name,
         price: products.price,
         count: order.count,
@@ -159,7 +174,7 @@ router.get("/:id/order", verifyToken, async function (req, res, next) {
     } else {
       res
         .status(400)
-        .json({ status: 400, message: "ไม่พบข้อมูลรายการสินค้า", data: [] });
+        .json({ status: 400, message: "ไม่พบข้อมูลรายการสินค้า", data: {} });
     }
   } catch (error) {
     console.log(error);
@@ -171,13 +186,12 @@ router.post("/:id/order", verifyToken, async function (req, res, next) {
   try {
     let { id } = req.params;
     const { user_id, count } = req.body;
-    const result = [];
 
     const checkProduct = await productSchema.findById(id);
     if (!checkProduct) {
       return res
         .status(400)
-        .json({ status: 400, message: "ไม่พบข้อมูลสินค้า", data: [] });
+        .json({ status: 400, message: "ไม่พบข้อมูลสินค้า", data: {} });
     } else {
       if (count < checkProduct.count || count === checkProduct.count) {
         let playload = { user_id: user_id, product_id: id, count: count };
@@ -194,22 +208,20 @@ router.post("/:id/order", verifyToken, async function (req, res, next) {
           date: new Date(),
         };
 
-        result.push(data);
-
         return res.status(201).json({
           status: 201,
           message: "เพิ่มข้อมูลสินค้าสำเร็จ",
-          data: result,
+          data: data,
         });
       } else {
         return res
           .status(400)
-          .json({ status: 400, message: "จํานวนสินค้าไม่เพียงพอ", data: [] });
+          .json({ status: 400, message: "จํานวนสินค้าไม่เพียงพอ", data: {} });
       }
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: 500, message: "เกิดข้อผิดพลาด", data: [] });
+    res.status(500).json({ status: 500, message: "เกิดข้อผิดพลาด", data: {} });
   }
 });
 
