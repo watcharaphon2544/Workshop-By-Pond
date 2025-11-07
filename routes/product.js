@@ -167,7 +167,7 @@ router.get("/:id/order", verifyToken, async function (req, res, next) {
   }
 });
 
-router.post("/:id/order", async function (req, res, next) {
+router.post("/:id/order", verifyToken, async function (req, res, next) {
   try {
     let { id } = req.params;
     const { user_id, count } = req.body;
